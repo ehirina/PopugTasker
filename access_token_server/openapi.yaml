@@ -1,0 +1,114 @@
+openapi: 3.0.1
+info:
+  title: Auth Popuger
+  description: Auth service supporting Popuger Task Manager functionality
+  contact:
+    email: rina.kachar@gmail.com
+    name: Rina K
+  version: 1.0.0
+paths:
+  /register:
+    post:
+      summary: Register popug in system
+      operationId: RegisterPopug
+      parameters:
+        - $ref: "#/components/parameters/Correlation-id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewPopug"
+      responses:
+        201:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PopugRegistered"
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+  /authorize:
+    post:
+      operationId: Authorize
+      parameters:
+        - $ref: "#/components/parameters/Correlation-id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PopugCredentials"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+  /verify:
+    post:
+      operationId: Verify
+      security:
+        - BearerAuth: []
+      responses:
+        204:
+          description: Successful response
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    NewPopug:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - secret
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        secret:
+          type: string
+    PopugRegistered:
+      allOf:
+        - $ref: "#/components/schemas/NewPopug"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+    PopugCredentials:
+      properties:
+        id:
+          type: integer
+          format: int64
+        secret:
+          type: string
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+  parameters:
+    Correlation-id:
+      name: X-Correlation-id
+      in: header
+      description: Correlation id
+      required: true
+      schema:
+        type: string
+        format: uuid
