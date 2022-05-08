@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="POPUG_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level idConversazione=%X{correlationId} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="POPUG_APPENDER" />
+    </root>
+
+    <logger name="po.pug.tasker.filter.PopugRequestLoggingFilter">
+        <level value="DEBUG" />
+    </logger>
+</configuration>
