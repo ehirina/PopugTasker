@@ -1,0 +1,191 @@
+openapi: 3.0.1
+info:
+  title: Popuger Task Manager
+  description: Backend service supporting Popuger Task Manager functionality
+  contact:
+    email: rina.kachar@gmail.com
+    name: Rina K
+  version: 1.0.0
+paths:
+  /v1/tasks:
+    get:
+      tags: [Task]
+      summary: In the POPUG context get all popug's tasks. In the ADMIN context get all tasks
+      operationId: GetTasks
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Correlation-id"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    post:
+      tags: [Task]
+      summary: Create Task
+      operationId: CreateTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Correlation-id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        201:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+  /v1/task/{task-id}:
+    get:
+      tags: [Task]
+      summary: In the POPUG context get task if it belongs to popug. In the ADMIN context get task
+      operationId: GetTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+        - $ref: "#/components/parameters/Correlation-id"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+    patch:
+      tags: [Task]
+      summary: Complete Task
+      operationId: CompleteTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+        - $ref: "#/components/parameters/Correlation-id"
+      responses:
+        204:
+          description: Successful response
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+  /v1/shuffle:
+    patch:
+      summary: Get task shuffled
+      tags: [Shuffle Magic]
+      operationId: GetTaskShuffled
+      description: Available only in the ADMIN context.
+      security:
+        - BearerAuth: []
+      responses:
+        204:
+          description: Successful response
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Cannot find the store
+  /v1/debug:
+    post:
+      summary: Triggers debug magic
+      tags: [Debug]
+      operationId: Debug
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Successful response
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    CreateTaskBody:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    TaskResponse:
+      allOf:
+        - $ref: '#/components/schemas/Task'
+        - type: object
+          properties:
+            assignee:
+              $ref: "#/components/schemas/Popug"
+    Task:
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [DONE, ASSIGNED]
+    Popug:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        role:
+          type: string
+  parameters:
+    Correlation-id:
+      name: X-Correlation-id
+      in: header
+      description: Correlation id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TaskId:
+      name: task-id
+      in: path
+      description: Task Id
+      required: true
+      schema:
+        type: integer
